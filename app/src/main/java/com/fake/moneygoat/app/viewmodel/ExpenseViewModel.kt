@@ -1,6 +1,5 @@
 package com.moneygoat.app.viewmodel
 import android.app.Application
-import android.app.Application
 import android.util.Log
 import androidx.lifecycle.*
 import com.moneygoat.app.data.database.AppDatabase
