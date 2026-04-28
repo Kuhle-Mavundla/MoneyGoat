@@ -16,10 +16,15 @@ import com.moneygoat.app.R
 import com.moneygoat.app.data.entity.Category
 import com.moneygoat.app.viewmodel.CategoryViewModel
 
+/**
+ * Fragment for managing user-defined categories.
+ * Users can create new categories and delete existing ones.
+ */
 class CategoryManagerFragment : Fragment() {
     private lateinit var categoryVM: CategoryViewModel
 
-    override fun onCreateView(inflater: LayoutInflater, c: ViewGroup?, s: Bundle?): View? = inflater.inflate(R.layout.fragment_category_manager, c, false)
+    override fun onCreateView(inflater: LayoutInflater, c: ViewGroup?, s: Bundle?): View? = 
+        inflater.inflate(R.layout.fragment_category_manager, c, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -30,25 +35,47 @@ class CategoryManagerFragment : Fragment() {
         val btnAdd = view.findViewById<Button>(R.id.btnAddCategory)
         val rv = view.findViewById<RecyclerView>(R.id.rvCategories)
         val tvEmpty = view.findViewById<TextView>(R.id.tvEmptyCategories)
+        
         rv.layoutManager = LinearLayoutManager(requireContext())
 
+        // Add category button listener
         btnAdd.setOnClickListener {
             val name = etName.text.toString().trim()
-            if (name.isEmpty()) { Toast.makeText(requireContext(), "Enter a category name", Toast.LENGTH_SHORT).show(); return@setOnClickListener }
-            categoryVM.addCategory(name, userId); etName.text.clear()
+            if (name.isEmpty()) { 
+                Toast.makeText(requireContext(), "Enter a category name", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener 
+            }
+            categoryVM.addCategory(name, userId)
+            etName.text.clear()
             Toast.makeText(requireContext(), "Category added!", Toast.LENGTH_SHORT).show()
         }
 
+        // Observe category list changes
         categoryVM.getCategories(userId).observe(viewLifecycleOwner) { cats ->
             tvEmpty.visibility = if (cats.isEmpty()) View.VISIBLE else View.GONE
             rv.adapter = CatAdapter(cats) { categoryVM.deleteCategory(it) }
         }
     }
 
+    /**
+     * Inner adapter class for displaying categories in a list.
+     */
     inner class CatAdapter(private val items: List<Category>, private val onDel: (Category) -> Unit) : RecyclerView.Adapter<CatAdapter.VH>() {
-        inner class VH(v: View) : RecyclerView.ViewHolder(v) { val tvName: TextView = v.findViewById(R.id.tvCatItemName); val btnDel: Button = v.findViewById(R.id.btnDeleteCategory) }
-        override fun onCreateViewHolder(p: ViewGroup, vt: Int) = VH(LayoutInflater.from(p.context).inflate(R.layout.item_category, p, false))
-        override fun onBindViewHolder(h: VH, pos: Int) { h.tvName.text = items[pos].name; h.btnDel.setOnClickListener { onDel(items[pos]) } }
+        
+        inner class VH(v: View) : RecyclerView.ViewHolder(v) { 
+            val tvName: TextView = v.findViewById(R.id.tvCatItemName)
+            val btnDel: Button = v.findViewById(R.id.btnDeleteCategory) 
+        }
+
+        override fun onCreateViewHolder(p: ViewGroup, vt: Int) = 
+            VH(LayoutInflater.from(p.context).inflate(R.layout.item_category, p, false))
+
+        override fun onBindViewHolder(h: VH, pos: Int) { 
+            h.tvName.text = items[pos].name
+            // Delete button logic
+            h.btnDel.setOnClickListener { onDel(items[pos]) } 
+        }
+
         override fun getItemCount() = items.size
     }
 }

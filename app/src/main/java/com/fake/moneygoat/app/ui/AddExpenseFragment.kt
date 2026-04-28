@@ -23,17 +23,23 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 
+/**
+ * Fragment for adding a new expense record.
+ * Includes form fields for description, amount, date, time range, and category selection.
+ * Also supports taking a photo of the receipt.
+ */
 class AddExpenseFragment : Fragment() {
     private val TAG = "MoneyGoat_AddExpenseUI"
     private lateinit var expenseVM: ExpenseViewModel
     private lateinit var categoryVM: CategoryViewModel
-    private var selectedDate = "";
-    private var selectedStartTime = "";
+    private var selectedDate = ""
+    private var selectedStartTime = ""
     private var selectedEndTime = ""
-    private var photoUri: Uri? = null;
+    private var photoUri: Uri? = null
     private var photoPath: String? = null
     private var categories = listOf<Category>()
 
+    // Register activity result for camera permission request
     private val requestCameraPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
@@ -46,6 +52,8 @@ class AddExpenseFragment : Fragment() {
                 .show()
         }
     }
+
+    // Register activity result for taking a picture
     private val takePicture =
         registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
             if (success && photoUri != null) {
@@ -77,6 +85,7 @@ class AddExpenseFragment : Fragment() {
         val btnPhoto = view.findViewById<Button>(R.id.btnTakePhoto)
         val btnSave = view.findViewById<Button>(R.id.btnSaveExpense)
 
+        // Populate the category spinner from the database
         categoryVM.getCategories(userId).observe(viewLifecycleOwner) { cats ->
             categories = cats
             val names =
@@ -87,42 +96,52 @@ class AddExpenseFragment : Fragment() {
                 }
         }
 
+        // Date Picker listener
         btnDate.setOnClickListener {
             val c = Calendar.getInstance()
             DatePickerDialog(
                 requireContext(),
                 { _, y, m, d ->
-                    selectedDate = "%04d-%02d-%02d".format(y, m + 1, d); btnDate.text = selectedDate
+                    selectedDate = "%04d-%02d-%02d".format(y, m + 1, d)
+                    btnDate.text = selectedDate
                 },
                 c.get(Calendar.YEAR),
                 c.get(Calendar.MONTH),
                 c.get(Calendar.DAY_OF_MONTH)
             ).show()
         }
+        
+        // Start Time Picker listener
         btnStart.setOnClickListener {
             val c = Calendar.getInstance()
             TimePickerDialog(
                 requireContext(),
                 { _, h, m ->
-                    selectedStartTime = "%02d:%02d".format(h, m); btnStart.text = selectedStartTime
+                    selectedStartTime = "%02d:%02d".format(h, m)
+                    btnStart.text = selectedStartTime
                 },
                 c.get(Calendar.HOUR_OF_DAY),
                 c.get(Calendar.MINUTE),
                 true
             ).show()
         }
+        
+        // End Time Picker listener
         btnEnd.setOnClickListener {
             val c = Calendar.getInstance()
             TimePickerDialog(
                 requireContext(),
                 { _, h, m ->
-                    selectedEndTime = "%02d:%02d".format(h, m); btnEnd.text = selectedEndTime
+                    selectedEndTime = "%02d:%02d".format(h, m)
+                    btnEnd.text = selectedEndTime
                 },
                 c.get(Calendar.HOUR_OF_DAY),
                 c.get(Calendar.MINUTE),
                 true
             ).show()
         }
+        
+        // Photo button listener with permission check
         btnPhoto.setOnClickListener {
             if (androidx.core.content.ContextCompat.checkSelfPermission(
                     requireContext(),
@@ -134,26 +153,33 @@ class AddExpenseFragment : Fragment() {
                 requestCameraPermission.launch(android.Manifest.permission.CAMERA)
             }
         }
+        
+        // Save expense button listener with validation
         btnSave.setOnClickListener {
-            val desc = etDesc.text.toString().trim();
+            val desc = etDesc.text.toString().trim()
             val amtStr = etAmt.text.toString().trim()
             Log.d(TAG, "Save expense button clicked. Desc: $desc, Amount: $amtStr")
+            
             if (desc.isEmpty() || amtStr.isEmpty() || selectedDate.isEmpty() || selectedStartTime.isEmpty() || selectedEndTime.isEmpty()) {
                 Log.w(TAG, "Expense validation failed: empty fields")
                 Toast.makeText(requireContext(), "Please fill in all fields", Toast.LENGTH_SHORT)
-                    .show(); return@setOnClickListener
+                    .show()
+                return@setOnClickListener
             }
             if (categories.isEmpty()) {
                 Log.w(TAG, "Expense validation failed: no categories")
                 Toast.makeText(requireContext(), "Create a category first", Toast.LENGTH_SHORT)
-                    .show(); return@setOnClickListener
+                    .show()
+                return@setOnClickListener
             }
             val amt = amtStr.toDoubleOrNull()
             if (amt == null || amt <= 0) {
                 Log.w(TAG, "Expense validation failed: invalid amount $amtStr")
                 Toast.makeText(requireContext(), "Enter a valid amount", Toast.LENGTH_SHORT)
-                    .show(); return@setOnClickListener
+                    .show()
+                return@setOnClickListener
             }
+            
             Log.d(TAG, "Validated expense. Adding via ViewModel.")
             expenseVM.addExpense(
                 Expense(
@@ -168,15 +194,25 @@ class AddExpenseFragment : Fragment() {
                 )
             )
             Toast.makeText(requireContext(), "Expense saved!", Toast.LENGTH_SHORT).show()
-            etDesc.text.clear(); etAmt.text.clear(); selectedDate = ""; selectedStartTime =
-            ""; selectedEndTime = ""
-            photoPath = null; photoUri = null; btnDate.text = "Select Date"; btnStart.text =
-            "Start Time"; btnEnd.text = "End Time"
+            
+            // Reset fields after saving
+            etDesc.text.clear()
+            etAmt.text.clear()
+            selectedDate = ""
+            selectedStartTime = ""
+            selectedEndTime = ""
+            photoPath = null
+            photoUri = null
+            btnDate.text = "Select Date"
+            btnStart.text = "Start Time"
+            btnEnd.text = "End Time"
             view.findViewById<ImageView>(R.id.ivPhoto).visibility = View.GONE
         }
-
     }
 
+    /**
+     * Creates a temporary file and launches the camera app to capture a photo.
+     */
     private fun launchCamera() {
         val file = java.io.File.createTempFile(
             "EXPENSE_${

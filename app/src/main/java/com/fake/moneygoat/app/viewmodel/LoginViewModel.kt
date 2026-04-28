@@ -8,13 +8,28 @@ import com.moneygoat.app.data.database.AppDatabase
 import com.moneygoat.app.data.entity.User
 import kotlinx.coroutines.launch
 
+/**
+ * ViewModel for handling user authentication (login and registration).
+ * Uses Coroutines for asynchronous database operations.
+ */
 class LoginViewModel(application: Application) : AndroidViewModel(application) {
     private val TAG = "MoneyGoat_Login"
     private val userDao = AppDatabase.getDatabase(application).userDao()
+    
+    // LiveData to observe login status
     val loginResult = MutableLiveData<User?>()
+    
+    // LiveData to observe registration status
     val registerResult = MutableLiveData<Boolean>()
+    
+    // LiveData to observe error messages
     val errorMessage = MutableLiveData<String>()
 
+    /**
+     * Attempts to log in a user with the provided credentials.
+     * @param username The username input.
+     * @param password The password input.
+     */
     fun login(username: String, password: String) {
         Log.d(TAG, "Login attempt for user: $username")
         viewModelScope.launch {
@@ -33,6 +48,13 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
             }
         }
     }
+
+    /**
+     * Attempts to register a new user.
+     * Checks if the username already exists before inserting.
+     * @param username The desired username.
+     * @param password The desired password.
+     */
     fun register(username: String, password: String) {
         Log.d(TAG, "Registration attempt for user: $username")
         viewModelScope.launch {

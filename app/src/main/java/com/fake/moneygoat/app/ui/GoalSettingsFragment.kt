@@ -12,10 +12,15 @@ import com.moneygoat.app.viewmodel.GoalViewModel
 import java.text.SimpleDateFormat
 import java.util.*
 
+/**
+ * Fragment for setting monthly financial goals.
+ * Users can set a minimum savings goal and a maximum spending limit using SeekBars or EditTexts.
+ */
 class GoalSettingsFragment : Fragment() {
     private lateinit var goalVM: GoalViewModel
 
-    override fun onCreateView(inflater: LayoutInflater, c: ViewGroup?, s: Bundle?): View? = inflater.inflate(R.layout.fragment_goal_settings, c, false)
+    override fun onCreateView(inflater: LayoutInflater, c: ViewGroup?, s: Bundle?): View? = 
+        inflater.inflate(R.layout.fragment_goal_settings, c, false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -31,34 +36,66 @@ class GoalSettingsFragment : Fragment() {
         val tvMaxVal = view.findViewById<TextView>(R.id.tvMaxValue)
         val btnSave = view.findViewById<Button>(R.id.btnSaveGoal)
 
+        // Set the context to the current month and year
         val cal = Calendar.getInstance()
-        val month = cal.get(Calendar.MONTH) + 1; val year = cal.get(Calendar.YEAR)
+        val month = cal.get(Calendar.MONTH) + 1
+        val year = cal.get(Calendar.YEAR)
         tvMonth.text = SimpleDateFormat("MMMM yyyy", Locale.getDefault()).format(cal.time)
 
+        // Configure Minimum Goal SeekBar
         seekMin.max = 50000
         seekMin.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(sb: SeekBar?, p: Int, fromUser: Boolean) { if (fromUser) { etMin.setText(p.toString()); tvMinVal.text = "R $p" } }
-            override fun onStartTrackingTouch(sb: SeekBar?) {}; override fun onStopTrackingTouch(sb: SeekBar?) {}
-        })
-        seekMax.max = 100000
-        seekMax.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(sb: SeekBar?, p: Int, fromUser: Boolean) { if (fromUser) { etMax.setText(p.toString()); tvMaxVal.text = "R $p" } }
-            override fun onStartTrackingTouch(sb: SeekBar?) {}; override fun onStopTrackingTouch(sb: SeekBar?) {}
+            override fun onProgressChanged(sb: SeekBar?, p: Int, fromUser: Boolean) { 
+                if (fromUser) { 
+                    etMin.setText(p.toString())
+                    tvMinVal.text = "R $p" 
+                } 
+            }
+            override fun onStartTrackingTouch(sb: SeekBar?) {}
+            override fun onStopTrackingTouch(sb: SeekBar?) {}
         })
 
+        // Configure Maximum Goal SeekBar
+        seekMax.max = 100000
+        seekMax.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(sb: SeekBar?, p: Int, fromUser: Boolean) { 
+                if (fromUser) { 
+                    etMax.setText(p.toString())
+                    tvMaxVal.text = "R $p" 
+                } 
+            }
+            override fun onStartTrackingTouch(sb: SeekBar?) {}
+            override fun onStopTrackingTouch(sb: SeekBar?) {}
+        })
+
+        // Observe current goal and populate UI if it exists
         goalVM.getGoal(userId, month, year).observe(viewLifecycleOwner) { goal ->
             if (goal != null) {
-                etMin.setText(goal.minimumGoal.toInt().toString()); etMax.setText(goal.maximumGoal.toInt().toString())
-                seekMin.progress = goal.minimumGoal.toInt(); seekMax.progress = goal.maximumGoal.toInt()
-                tvMinVal.text = "R ${goal.minimumGoal.toInt()}"; tvMaxVal.text = "R ${goal.maximumGoal.toInt()}"
+                etMin.setText(goal.minimumGoal.toInt().toString())
+                etMax.setText(goal.maximumGoal.toInt().toString())
+                seekMin.progress = goal.minimumGoal.toInt()
+                seekMax.progress = goal.maximumGoal.toInt()
+                tvMinVal.text = "R ${goal.minimumGoal.toInt()}"
+                tvMaxVal.text = "R ${goal.maximumGoal.toInt()}"
             }
         }
 
+        // Save goals to the database
         btnSave.setOnClickListener {
             val min = etMin.text.toString().trim().toDoubleOrNull()
             val max = etMax.text.toString().trim().toDoubleOrNull()
-            if (min == null || max == null) { Toast.makeText(requireContext(), "Enter both goals", Toast.LENGTH_SHORT).show(); return@setOnClickListener }
-            if (min > max) { Toast.makeText(requireContext(), "Min must be less than max", Toast.LENGTH_SHORT).show(); return@setOnClickListener }
+            
+            if (min == null || max == null) { 
+                Toast.makeText(requireContext(), "Enter both goals", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener 
+            }
+            
+            // Logic validation: Minimum goal shouldn't exceed the Maximum goal
+            if (min > max) { 
+                Toast.makeText(requireContext(), "Min must be less than max", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener 
+            }
+
             goalVM.saveGoal(userId, month, year, min, max)
             Toast.makeText(requireContext(), "Goals saved!", Toast.LENGTH_SHORT).show()
         }
