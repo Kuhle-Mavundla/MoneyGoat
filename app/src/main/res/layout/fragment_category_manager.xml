@@ -1,3 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Screen for managing expense categories.
+    Provides an interface to add new categories and view existing ones in a list.
+-->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -5,6 +10,7 @@
     android:padding="16dp"
     android:clipToPadding="false">
 
+    <!-- Title -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -14,6 +20,7 @@
         android:textColor="#1A6B4A"
         android:layout_marginBottom="16dp" />
 
+    <!-- Section for adding a new category -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -41,6 +48,7 @@
 
     </LinearLayout>
 
+    <!-- Empty state message -->
     <TextView
         android:id="@+id/tvEmptyCategories"
         android:layout_width="match_parent"
@@ -50,6 +58,7 @@
         android:padding="32dp"
         android:visibility="gone" />
 
+    <!-- List of existing categories -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvCategories"
         android:layout_width="match_parent"

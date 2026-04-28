@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Layout for a single expense item in a list (RecyclerView).
+    Displays description, date, time, an optional camera icon if a photo exists, and the amount.
+-->
 <androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -21,6 +25,7 @@
             android:layout_weight="1"
             android:orientation="vertical">
 
+            <!-- Expense Description -->
             <TextView
                 android:id="@+id/tvExpenseDescription"
                 android:layout_width="wrap_content"
@@ -29,6 +34,7 @@
                 android:textStyle="bold"
                 android:textColor="@color/text_primary"/>
 
+            <!-- Date of Expense -->
             <TextView
                 android:id="@+id/tvExpenseDate"
                 android:layout_width="wrap_content"
@@ -36,6 +42,7 @@
                 android:textSize="12sp"
                 android:textColor="@color/text_secondary"/>
 
+            <!-- Time range of Expense -->
             <TextView
                 android:id="@+id/tvExpenseTime"
                 android:layout_width="wrap_content"
@@ -45,6 +52,7 @@
 
         </LinearLayout>
 
+        <!-- Indicator showing if a receipt photo is attached -->
         <ImageView
             android:id="@+id/ivHasPhoto"
             android:layout_width="24dp"
@@ -54,6 +62,7 @@
             android:layout_marginEnd="8dp"
             android:visibility="gone"/>
 
+        <!-- Monetary value of the expense -->
         <TextView
             android:id="@+id/tvExpenseAmount"
             android:layout_width="wrap_content"

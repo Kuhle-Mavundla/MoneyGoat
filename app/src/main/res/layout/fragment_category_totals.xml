@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Screen showing spending breakdown by category.
+    Displays categorical totals and a grand total for a selected date range.
+-->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
@@ -7,6 +11,7 @@
     android:padding="16dp"
     android:background="@color/background_cream">
 
+    <!-- Title -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -16,12 +21,14 @@
         android:textColor="@color/primary_green"
         android:layout_marginBottom="12dp"/>
 
+    <!-- Filter Controls -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:layout_marginBottom="8dp">
 
+        <!-- Start Date Filter -->
         <Button
             android:id="@+id/btnCatFilterStart"
             android:layout_width="0dp"
@@ -32,6 +39,7 @@
             android:textColor="@color/text_primary"
             android:layout_marginEnd="4dp"/>
 
+        <!-- End Date Filter -->
         <Button
             android:id="@+id/btnCatFilterEnd"
             android:layout_width="0dp"
@@ -42,6 +50,7 @@
             android:textColor="@color/text_primary"
             android:layout_marginEnd="4dp"/>
 
+        <!-- Apply Button -->
         <Button
             android:id="@+id/btnCatApplyFilter"
             android:layout_width="wrap_content"
@@ -53,6 +62,7 @@
 
     </LinearLayout>
 
+    <!-- Overall Sum for the period -->
     <TextView
         android:id="@+id/tvGrandTotal"
         android:layout_width="match_parent"
@@ -64,6 +74,7 @@
         android:padding="8dp"
         android:layout_marginBottom="8dp"/>
 
+    <!-- Empty State Text -->
     <TextView
         android:id="@+id/tvEmptyCat"
         android:layout_width="match_parent"
@@ -74,6 +85,7 @@
         android:padding="32dp"
         android:visibility="gone"/>
 
+    <!-- List of Category Totals -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvCategoryTotals"
         android:layout_width="match_parent"

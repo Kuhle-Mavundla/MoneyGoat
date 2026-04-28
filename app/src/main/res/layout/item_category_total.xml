@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Layout for a single row in the category breakdown (Analytics) list.
+    Displays the category name and the total amount spent in that category.
+-->
 <androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -15,6 +19,7 @@
         android:padding="16dp"
         android:gravity="center_vertical">
 
+        <!-- Category Name -->
         <TextView
             android:id="@+id/tvCatTotalName"
             android:layout_width="0dp"
@@ -24,6 +29,7 @@
             android:textStyle="bold"
             android:textColor="@color/text_primary"/>
 
+        <!-- Total Sum spent in this category -->
         <TextView
             android:id="@+id/tvCatTotalAmount"
             android:layout_width="wrap_content"

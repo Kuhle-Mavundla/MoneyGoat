@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Screen for adding a new expense entry.
+    Contains inputs for description, amount, date selection, time range selection,
+    category selection, and an option to capture a receipt photo.
+-->
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -21,6 +26,7 @@
             android:textColor="@color/primary_green"
             android:layout_marginBottom="16dp"/>
 
+        <!-- Card containing the entry form -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -33,6 +39,7 @@
                 android:orientation="vertical"
                 android:padding="20dp">
 
+                <!-- Description Input -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -51,6 +58,7 @@
                     android:padding="12dp"
                     android:layout_marginBottom="12dp"/>
 
+                <!-- Amount Input -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -69,6 +77,7 @@
                     android:padding="12dp"
                     android:layout_marginBottom="12dp"/>
 
+                <!-- Date Selection Button -->
                 <Button
                     android:id="@+id/btnSelectDate"
                     android:layout_width="match_parent"
@@ -78,6 +87,7 @@
                     android:textColor="@color/text_primary"
                     android:layout_marginBottom="8dp"/>
 
+                <!-- Time Range Selection Buttons -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -106,6 +116,7 @@
 
                 </LinearLayout>
 
+                <!-- Category Selection -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -122,6 +133,7 @@
                     android:padding="8dp"
                     android:layout_marginBottom="16dp"/>
 
+                <!-- Receipt Photo Capture -->
                 <Button
                     android:id="@+id/btnTakePhoto"
                     android:layout_width="match_parent"
@@ -131,6 +143,7 @@
                     android:textColor="@android:color/white"
                     android:layout_marginBottom="8dp"/>
 
+                <!-- Preview of the captured photo -->
                 <ImageView
                     android:id="@+id/ivPhoto"
                     android:layout_width="match_parent"
@@ -140,6 +153,7 @@
                     android:layout_marginBottom="16dp"
                     android:contentDescription="Receipt photo"/>
 
+                <!-- Final Submission Button -->
                 <Button
                     android:id="@+id/btnSaveExpense"
                     android:layout_width="match_parent"

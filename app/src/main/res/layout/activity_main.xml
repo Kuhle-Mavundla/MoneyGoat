@@ -1,4 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    MainActivity layout.
+    Contains a FrameLayout container for fragments and a BottomNavigationView for navigation.
+
+    Reference List:
+    Android Room Database & Data Persistence
+    Android Developers (2024) Save data in a local database using Room. Available at: https://developer.android.com/training/data-storage/room (Accessed: 26 April 2026).
+    Android Developers (2024) Accessing data using Room DAOs. Available at: https://developer.android.com/training/data-storage/room/accessing-data (Accessed: 26 April 2026).
+    Lacerda, D. (2024) Room Database in Android: A comprehensive guide. Available at: https://medium.com/@dlacerda/room-database-in-android-a-comprehensive-guide (Accessed: 26 April 2026).
+    Kotlin & Android Development
+    Android Developers (2024) Android Basics with Compose. Available at: https://developer.android.com/courses/android-basics-compose/course (Accessed: 26 April 2026).
+    Leiva, A. (2023) Kotlin for Android Developers. Victoria, BC: Leanpub.
+    JetBrains (2024) Kotlin documentation: Coroutines basics. Available at: https://kotlinlang.org/docs/coroutines-basics.html (Accessed: 26 April 2026).
+    MVVM Architecture Pattern
+    Android Developers (2024) Guide to app architecture. Available at: https://developer.android.com/topic/architecture (Accessed: 26 April 2026).
+    Android Developers (2024) ViewModel overview. Available at: https://developer.android.com/topic/libraries/architecture/viewmodel (Accessed: 26 April 2026).
+    Mobile UI/UX Design
+    Google (2024) Material Design 3: Design guidelines. Available at: https://m3.material.io/ (Accessed: 26 April 2026).
+    Babich, N. (2024) 'Mobile UX design: Key principles', Smashing Magazine. Available at: https://www.smashingmagazine.com/2024/02/mobile-ux-design-key-principles/ (Accessed: 26 April 2026).
+    Budget Tracking & Personal Finance
+    Sahay, A. (2024) 'The role of mobile applications in personal financial management among young adults', International Journal of Finance and Economics, 29(2), pp. 1045–1062.
+    Pew Research Center (2024) Mobile technology and home broadband 2024. Available at: https://www.pewresearch.org/internet/2024/01/31/mobile-technology-and-home-broadband-2024/ (Accessed: 26 April 2026).
+    Camera & Image Handling in Android
+    Android Developers (2024) Take photos. Available at: https://developer.android.com/media/camera/camera-deprecated/photobasics (Accessed: 26 April 2026).
+    Android Developers (2024) FileProvider. Available at: https://developer.android.com/reference/androidx/core/content/FileProvider (Accessed: 26 April 2026).
+-->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -6,11 +32,13 @@
     android:background="@color/background_cream"
     android:fitsSystemWindows="true">
 
+    <!-- Container where the fragments are loaded -->
     <FrameLayout android:id="@+id/fragmentContainer"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"/>
 
+    <!-- Bottom navigation bar for switching between main features -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"

@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Screen displaying a filterable history of all expenses.
+    Includes date pickers for range selection and a RecyclerView for the list.
+-->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
@@ -7,6 +11,7 @@
     android:padding="16dp"
     android:background="@color/background_cream">
 
+    <!-- Title -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -16,12 +21,14 @@
         android:textColor="@color/primary_green"
         android:layout_marginBottom="12dp"/>
 
+    <!-- Filter Controls -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:layout_marginBottom="8dp">
 
+        <!-- Start Date Selector -->
         <Button
             android:id="@+id/btnFilterStart"
             android:layout_width="0dp"
@@ -32,6 +39,7 @@
             android:textColor="@color/text_primary"
             android:layout_marginEnd="4dp"/>
 
+        <!-- End Date Selector -->
         <Button
             android:id="@+id/btnFilterEnd"
             android:layout_width="0dp"
@@ -42,6 +50,7 @@
             android:textColor="@color/text_primary"
             android:layout_marginEnd="4dp"/>
 
+        <!-- Apply Filter Button -->
         <Button
             android:id="@+id/btnApplyFilter"
             android:layout_width="wrap_content"
@@ -53,6 +62,7 @@
 
     </LinearLayout>
 
+    <!-- Empty State Placeholder -->
     <TextView
         android:id="@+id/tvEmptyList"
         android:layout_width="match_parent"
@@ -63,6 +73,7 @@
         android:padding="32dp"
         android:visibility="gone"/>
 
+    <!-- Main Expense List -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvExpenses"
         android:layout_width="match_parent"

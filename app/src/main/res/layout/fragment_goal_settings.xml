@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Screen for setting monthly financial targets.
+    Allows users to define a minimum savings goal and a maximum spending limit
+    using SeekBars for quick selection and EditTexts for precise input.
+-->
 <ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -21,6 +26,7 @@
             android:textColor="@color/primary_green"
             android:layout_marginBottom="4dp"/>
 
+        <!-- Display for current target month -->
         <TextView
             android:id="@+id/tvGoalMonth"
             android:layout_width="wrap_content"
@@ -41,6 +47,7 @@
                 android:orientation="vertical"
                 android:padding="20dp">
 
+                <!-- Minimum Goal Section -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -76,6 +83,7 @@
                     android:padding="12dp"
                     android:layout_marginBottom="20dp"/>
 
+                <!-- Maximum Goal Section -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -111,6 +119,7 @@
                     android:padding="12dp"
                     android:layout_marginBottom="24dp"/>
 
+                <!-- Save Button -->
                 <Button
                     android:id="@+id/btnSaveGoal"
                     android:layout_width="match_parent"
