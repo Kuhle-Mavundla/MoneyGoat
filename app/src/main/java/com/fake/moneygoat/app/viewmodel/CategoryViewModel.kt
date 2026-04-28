@@ -14,3 +14,4 @@ class CategoryViewModel(application: Application) : AndroidViewModel(application
     fun addCategory(name: String, userId: Long) { viewModelScope.launch { dao.insert(Category(name = name, userId = userId)) } }
     fun deleteCategory(category: Category) { viewModelScope.launch { dao.delete(category) } }
 }
+
