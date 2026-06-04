@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "293040152058",
+    "firebase_url": "https://roomdatabase-9517a-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "roomdatabase-9517a",
+    "storage_bucket": "roomdatabase-9517a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:293040152058:android:4706d8f24cd7f4cabfd843",
+        "android_client_info": {
+          "package_name": "com.example.roomdatabase"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAx4u4cfAs051rFUGM8HYMONMydqoEfW48"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:293040152058:android:a5b9d972a005e143bfd843",
+        "android_client_info": {
+          "package_name": "com.moneygoat.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAx4u4cfAs051rFUGM8HYMONMydqoEfW48"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
