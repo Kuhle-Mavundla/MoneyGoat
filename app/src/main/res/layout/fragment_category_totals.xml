@@ -1,94 +1,163 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     Screen showing spending breakdown by category.
-    Displays categorical totals and a grand total for a selected date range.
+    Displays categorical totals, a grand total, and a visual graph for a selected date range.
 -->
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp"
+    android:fillViewport="true"
     android:background="@color/background_cream">
 
-    <!-- Title -->
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Category Totals"
-        android:textSize="22sp"
-        android:textStyle="bold"
-        android:textColor="@color/primary_green"
-        android:layout_marginBottom="12dp"/>
-
-    <!-- Filter Controls -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginBottom="8dp">
+        android:orientation="vertical"
+        android:padding="16dp">
 
-        <!-- Start Date Filter -->
-        <Button
-            android:id="@+id/btnCatFilterStart"
-            android:layout_width="0dp"
-            android:layout_height="40dp"
-            android:layout_weight="1"
-            android:textSize="11sp"
-            android:backgroundTint="@color/button_light"
-            android:textColor="@color/text_primary"
-            android:layout_marginEnd="4dp"/>
-
-        <!-- End Date Filter -->
-        <Button
-            android:id="@+id/btnCatFilterEnd"
-            android:layout_width="0dp"
-            android:layout_height="40dp"
-            android:layout_weight="1"
-            android:textSize="11sp"
-            android:backgroundTint="@color/button_light"
-            android:textColor="@color/text_primary"
-            android:layout_marginEnd="4dp"/>
-
-        <!-- Apply Button -->
-        <Button
-            android:id="@+id/btnCatApplyFilter"
+        <!-- Title -->
+        <TextView
             android:layout_width="wrap_content"
-            android:layout_height="40dp"
-            android:text="Filter"
-            android:textSize="12sp"
-            android:backgroundTint="@color/primary_green"
-            android:textColor="@android:color/white"/>
+            android:layout_height="wrap_content"
+            android:text="Spending Analytics"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="@color/primary_green"
+            android:layout_marginBottom="12dp"/>
+
+        <!-- Filter Controls -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp">
+
+            <!-- Start Date Filter -->
+            <Button
+                android:id="@+id/btnCatFilterStart"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="11sp"
+                android:backgroundTint="@color/button_light"
+                android:textColor="@color/text_primary"
+                android:layout_marginEnd="4dp"/>
+
+            <!-- End Date Filter -->
+            <Button
+                android:id="@+id/btnCatFilterEnd"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="11sp"
+                android:backgroundTint="@color/button_light"
+                android:textColor="@color/text_primary"
+                android:layout_marginEnd="4dp"/>
+
+            <!-- Apply Button -->
+            <Button
+                android:id="@+id/btnCatApplyFilter"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Filter"
+                android:textSize="12sp"
+                android:backgroundTint="@color/primary_green"
+                android:textColor="@android:color/white"/>
+
+        </LinearLayout>
+
+        <!-- Visual Analytics Card -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardGraph"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="3dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="8dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Category Breakdown"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="8dp"/>
+
+                <!-- Pie Chart for Category Spending -->
+                <com.github.mikephil.charting.charts.PieChart
+                    android:id="@+id/pieChart"
+                    android:layout_width="match_parent"
+                    android:layout_height="300dp" />
+
+                <!-- Bar Chart for Budget vs Actual (Monthly) -->
+                <TextView
+                    android:id="@+id/tvBudgetComparison"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Actual vs Budget Goals"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="16dp"/>
+
+                <com.github.mikephil.charting.charts.BarChart
+                    android:id="@+id/barChart"
+                    android:layout_width="match_parent"
+                    android:layout_height="250dp" />
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Totals Summary -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="3dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/tvGrandTotal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Total: R 0.00"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/primary_green"
+                    android:layout_marginBottom="8dp"/>
+
+                <!-- Empty State Text -->
+                <TextView
+                    android:id="@+id/tvEmptyCat"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="No data for this period."
+                    android:textAlignment="center"
+                    android:textColor="@color/text_secondary"
+                    android:padding="16dp"
+                    android:visibility="gone"/>
+
+                <!-- List of Category Totals -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvCategoryTotals"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
 
     </LinearLayout>
-
-    <!-- Overall Sum for the period -->
-    <TextView
-        android:id="@+id/tvGrandTotal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Total: R 0.00"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:textColor="@color/primary_green"
-        android:padding="8dp"
-        android:layout_marginBottom="8dp"/>
-
-    <!-- Empty State Text -->
-    <TextView
-        android:id="@+id/tvEmptyCat"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="No data for this period."
-        android:textAlignment="center"
-        android:textColor="@color/text_secondary"
-        android:padding="32dp"
-        android:visibility="gone"/>
-
-    <!-- List of Category Totals -->
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvCategoryTotals"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"/>
-</LinearLayout>
+</ScrollView>
