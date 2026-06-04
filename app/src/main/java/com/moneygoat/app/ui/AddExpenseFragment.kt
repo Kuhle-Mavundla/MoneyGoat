@@ -4,13 +4,13 @@ import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.net.Uri
 import android.os.Bundle
-import android.os.Environment
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -24,14 +24,20 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 /**
- * Fragment for adding a new expense record.
- * Includes form fields for description, amount, date, time range, and category selection.
- * Also supports taking a photo of the receipt.
+ * AddExpenseFragment allows users to input a new financial transaction.
+ * It features a comprehensive form including:
+ * - Description and Amount
+ * - Date selection via DatePickerDialog
+ * - Start/End time range for the activity
+ * - Category selection from a dynamic list
+ * - Image capture for digital receipt archiving
  */
 class AddExpenseFragment : Fragment() {
-    private val TAG = "MoneyGoat_AddExpenseUI"
+    private val TAG = "MoneyGoat_AddExpense"
     private lateinit var expenseVM: ExpenseViewModel
     private lateinit var categoryVM: CategoryViewModel
+
+    // State variables for form input
     private var selectedDate = ""
     private var selectedStartTime = ""
     private var selectedEndTime = ""
@@ -39,43 +45,55 @@ class AddExpenseFragment : Fragment() {
     private var photoPath: String? = null
     private var categories = listOf<Category>()
 
-    // Register activity result for camera permission request
+    /**
+     * Handles the result of the camera permission request.
+     * If granted, it proceeds to launch the system camera.
+     */
     private val requestCameraPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
         if (granted) {
-            Log.d(TAG, "Camera permission granted")
+            Log.i(TAG, "Camera permission granted by user")
             launchCamera()
         } else {
-            Log.w(TAG, "Camera permission denied")
-            Toast.makeText(requireContext(), "Camera permission required", Toast.LENGTH_SHORT)
-                .show()
+            Log.w(TAG, "Camera permission denied by user")
+            Toast.makeText(requireContext(), "Camera permission required to scan receipts", Toast.LENGTH_SHORT).show()
         }
     }
 
-    // Register activity result for taking a picture
-    private val takePicture =
-        registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
-            if (success && photoUri != null) {
-                Log.d(TAG, "Photo captured successfully: $photoPath")
-                view?.findViewById<ImageView>(R.id.ivPhoto)
-                    ?.let { it.setImageURI(photoUri); it.visibility = View.VISIBLE }
-                Toast.makeText(requireContext(), "Photo captured!", Toast.LENGTH_SHORT).show()
-            } else {
-                Log.w(TAG, "Photo capture failed or cancelled")
+    /**
+     * Handles the result of the TakePicture intent.
+     * If successful, updates the UI to show the captured receipt.
+     */
+    private val takePicture = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+        if (success && photoUri != null) {
+            Log.d(TAG, "Photo successfully saved at: $photoPath")
+            view?.findViewById<ImageView>(R.id.ivPhoto)?.apply {
+                setImageURI(photoUri)
+                visibility = View.VISIBLE
             }
+        } else {
+            Log.v(TAG, "Photo capture cancelled or failed")
+            photoPath = null // Reset path if capture failed
         }
+    }
 
-    override fun onCreateView(inflater: LayoutInflater, c: ViewGroup?, s: Bundle?): View? =
-        inflater.inflate(R.layout.fragment_add_expense, c, false)
+    override fun onCreateView(inflater: LayoutInflater, c: ViewGroup?, s: Bundle?): View? {
+        Log.d(TAG, "Inflating AddExpenseFragment")
+        return inflater.inflate(R.layout.fragment_add_expense, c, false)
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        Log.d(TAG, "AddExpenseFragment created")
-        val userId = (requireActivity() as MainActivity).userId
+
+        val mainAct = requireActivity() as MainActivity
+        val userId = mainAct.userId
+
+        // Initialize ViewModels
         expenseVM = ViewModelProvider(this)[ExpenseViewModel::class.java]
         categoryVM = ViewModelProvider(this)[CategoryViewModel::class.java]
 
+        // UI references
         val etDesc = view.findViewById<EditText>(R.id.etDescription)
         val etAmt = view.findViewById<EditText>(R.id.etAmount)
         val btnDate = view.findViewById<Button>(R.id.btnSelectDate)
@@ -85,149 +103,138 @@ class AddExpenseFragment : Fragment() {
         val btnPhoto = view.findViewById<Button>(R.id.btnTakePhoto)
         val btnSave = view.findViewById<Button>(R.id.btnSaveExpense)
 
-        // Populate the category spinner from the database
+        // Populate Category Spinner: Only shows categories created by this user
         categoryVM.getCategories(userId).observe(viewLifecycleOwner) { cats ->
+            Log.v(TAG, "Updating category spinner with ${cats.size} categories")
             categories = cats
-            val names =
-                if (cats.isEmpty()) listOf("No categories - create one first") else cats.map { it.name }
-            spinner.adapter =
-                ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, names).also {
-                    it.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-                }
+            val names = if (cats.isEmpty()) listOf("No categories - create one first") else cats.map { it.name }
+            spinner.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, names).also {
+                it.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            }
         }
 
-        // Date Picker listener
+        // Date Picker: Ensures standardized yyyy-MM-dd format for database consistency
         btnDate.setOnClickListener {
             val c = Calendar.getInstance()
-            DatePickerDialog(
-                requireContext(),
-                { _, y, m, d ->
-                    selectedDate = "%04d-%02d-%02d".format(y, m + 1, d)
-                    btnDate.text = selectedDate
-                },
-                c.get(Calendar.YEAR),
-                c.get(Calendar.MONTH),
-                c.get(Calendar.DAY_OF_MONTH)
-            ).show()
+            DatePickerDialog(requireContext(), { _, y, m, d ->
+                selectedDate = "%04d-%02d-%02d".format(y, m + 1, d)
+                btnDate.text = selectedDate
+                Log.d(TAG, "Date selected: $selectedDate")
+            }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)).show()
         }
         
-        // Start Time Picker listener
+        // Start Time Picker
         btnStart.setOnClickListener {
             val c = Calendar.getInstance()
-            TimePickerDialog(
-                requireContext(),
-                { _, h, m ->
-                    selectedStartTime = "%02d:%02d".format(h, m)
-                    btnStart.text = selectedStartTime
-                },
-                c.get(Calendar.HOUR_OF_DAY),
-                c.get(Calendar.MINUTE),
-                true
-            ).show()
+            TimePickerDialog(requireContext(), { _, h, m ->
+                selectedStartTime = "%02d:%02d".format(h, m)
+                btnStart.text = selectedStartTime
+            }, c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), true).show()
         }
         
-        // End Time Picker listener
+        // End Time Picker
         btnEnd.setOnClickListener {
             val c = Calendar.getInstance()
-            TimePickerDialog(
-                requireContext(),
-                { _, h, m ->
-                    selectedEndTime = "%02d:%02d".format(h, m)
-                    btnEnd.text = selectedEndTime
-                },
-                c.get(Calendar.HOUR_OF_DAY),
-                c.get(Calendar.MINUTE),
-                true
-            ).show()
+            TimePickerDialog(requireContext(), { _, h, m ->
+                selectedEndTime = "%02d:%02d".format(h, m)
+                btnEnd.text = selectedEndTime
+            }, c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE), true).show()
         }
         
-        // Photo button listener with permission check
+        // Receipt Photo logic
         btnPhoto.setOnClickListener {
-            if (androidx.core.content.ContextCompat.checkSelfPermission(
-                    requireContext(),
-                    android.Manifest.permission.CAMERA
-                ) == android.content.pm.PackageManager.PERMISSION_GRANTED
-            ) {
+            Log.i(TAG, "Requesting receipt photo")
+            if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.CAMERA) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
                 launchCamera()
             } else {
                 requestCameraPermission.launch(android.Manifest.permission.CAMERA)
             }
         }
         
-        // Save expense button listener with validation
+        // Save Logic: Performs data validation before database insertion
         btnSave.setOnClickListener {
             val desc = etDesc.text.toString().trim()
             val amtStr = etAmt.text.toString().trim()
-            val username = (requireActivity() as MainActivity).username
-            
+
+            Log.d(TAG, "Attempting to save expense: '$desc'")
+
+            // Validate required fields
             if (desc.isEmpty() || amtStr.isEmpty() || selectedDate.isEmpty() || selectedStartTime.isEmpty() || selectedEndTime.isEmpty()) {
-                Log.w(TAG, "Expense validation failed: empty fields")
-                Toast.makeText(requireContext(), "Please fill in all fields", Toast.LENGTH_SHORT)
-                    .show()
+                Log.w(TAG, "Save failed: Incomplete form data")
+                Toast.makeText(requireContext(), "Please fill in all fields", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
+
+            // Ensure categories exist
             if (categories.isEmpty()) {
-                Log.w(TAG, "Expense validation failed: no categories")
-                Toast.makeText(requireContext(), "Create a category first", Toast.LENGTH_SHORT)
-                    .show()
+                Log.w(TAG, "Save failed: No categories available")
+                Toast.makeText(requireContext(), "Create a category in Category Manager first", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
+
+            // Validate numeric amount
             val amt = amtStr.toDoubleOrNull()
             if (amt == null || amt <= 0) {
-                Log.w(TAG, "Expense validation failed: invalid amount $amtStr")
-                Toast.makeText(requireContext(), "Enter a valid amount", Toast.LENGTH_SHORT)
-                    .show()
+                Log.w(TAG, "Save failed: Invalid amount '$amtStr'")
+                Toast.makeText(requireContext(), "Enter a valid positive amount", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
             
-            Log.d(TAG, "Validated expense. Adding via ViewModel.")
-            expenseVM.addExpense(
-                Expense(
-                    date = selectedDate,
-                    startTime = selectedStartTime,
-                    endTime = selectedEndTime,
-                    description = desc,
-                    amount = amt,
-                    categoryId = categories[spinner.selectedItemPosition].id,
-                    userId = userId,
-                    photoPath = photoPath
-                ),
-                username
+            val expense = Expense(
+                date = selectedDate,
+                startTime = selectedStartTime,
+                endTime = selectedEndTime,
+                description = desc,
+                amount = amt,
+                categoryId = categories[spinner.selectedItemPosition].id,
+                userId = userId,
+                photoPath = photoPath
             )
-            Toast.makeText(requireContext(), "Expense saved!", Toast.LENGTH_SHORT).show()
+
+            Log.i(TAG, "Validation passed. Saving expense to Room and Firebase.")
+            expenseVM.addExpense(expense, mainAct.username)
             
-            // Reset fields after saving
-            etDesc.text.clear()
-            etAmt.text.clear()
-            selectedDate = ""
-            selectedStartTime = ""
-            selectedEndTime = ""
-            photoPath = null
-            photoUri = null
-            btnDate.text = "Select Date"
-            btnStart.text = "Start Time"
-            btnEnd.text = "End Time"
-            view.findViewById<ImageView>(R.id.ivPhoto).visibility = View.GONE
+            Toast.makeText(requireContext(), "Expense successfully saved!", Toast.LENGTH_SHORT).show()
+            resetForm(etDesc, etAmt, btnDate, btnStart, btnEnd, view.findViewById(R.id.ivPhoto))
         }
     }
 
     /**
-     * Creates a temporary file and launches the camera app to capture a photo.
+     * Clears all input fields to prepare for the next entry.
+     */
+    private fun resetForm(desc: EditText, amt: EditText, date: Button, start: Button, end: Button, image: ImageView) {
+        Log.v(TAG, "Resetting AddExpense form fields")
+        desc.text.clear()
+        amt.text.clear()
+        selectedDate = ""
+        selectedStartTime = ""
+        selectedEndTime = ""
+        photoPath = null
+        photoUri = null
+        date.text = "Select Date"
+        start.text = "Start Time"
+        end.text = "End Time"
+        image.visibility = View.GONE
+    }
+
+    /**
+     * Generates a temporary file for the image and launches the system camera app.
+     * Uses FileProvider for secure URI sharing with the camera app.
      */
     private fun launchCamera() {
-        val file = java.io.File.createTempFile(
-            "EXPENSE_${
-                java.text.SimpleDateFormat("yyyyMMdd_HHmmss", java.util.Locale.getDefault())
-                    .format(java.util.Date())
-            }_",
-            ".jpg", requireContext().getExternalFilesDir(android.os.Environment.DIRECTORY_PICTURES)
-        )
-        photoPath = file.absolutePath
-        photoUri = FileProvider.getUriForFile(
-            requireContext(),
-            "${requireContext().packageName}.fileprovider",
-            file
-        )
-        takePicture.launch(photoUri!!)
+        try {
+            val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+            val storageDir = requireContext().getExternalFilesDir(android.os.Environment.DIRECTORY_PICTURES)
+            val file = File.createTempFile("RECEIPT_${timeStamp}_", ".jpg", storageDir)
+
+            photoPath = file.absolutePath
+            photoUri = FileProvider.getUriForFile(requireContext(), "${requireContext().packageName}.fileprovider", file)
+
+            Log.d(TAG, "Launching camera. Temp file created at: $photoPath")
+            takePicture.launch(photoUri!!)
+        } catch (e: Exception) {
+            Log.e(TAG, "Error while preparing camera: ${e.message}", e)
+            Toast.makeText(requireContext(), "Could not open camera", Toast.LENGTH_SHORT).show()
+        }
     }
 }

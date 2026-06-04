@@ -5,14 +5,30 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 
 /**
- * Data class representing an expense category.
- * Each category is associated with a specific user.
+ * Category represents a user-defined classification for expenses.
+ * 
+ * Users can create custom categories (e.g., 'Coffee', 'Rent', 'Travel') to better
+ * understand their spending habits. Each category is unique to a specific user.
  */
-@Entity(tableName = "categories",
-    foreignKeys = [ForeignKey(entity = User::class, parentColumns = ["id"], childColumns = ["userId"], onDelete = ForeignKey.CASCADE)],
-    indices = [Index(value = ["userId"])])
+@Entity(
+    tableName = "categories",
+    foreignKeys = [
+        ForeignKey(
+            entity = User::class, 
+            parentColumns = ["id"], 
+            childColumns = ["userId"], 
+            onDelete = ForeignKey.CASCADE
+        )
+    ],
+    indices = [Index(value = ["userId"])]
+)
 data class Category(
+    // Unique identifier for the category record
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    
+    // The display name of the category
     val name: String = "",
+    
+    // The ID of the user who owns this category
     val userId: Long = 0
 )

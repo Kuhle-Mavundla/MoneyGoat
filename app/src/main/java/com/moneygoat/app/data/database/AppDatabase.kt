@@ -1,5 +1,6 @@
 package com.moneygoat.app.data.database
 import android.content.Context
+import android.util.Log
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -7,50 +8,57 @@ import com.moneygoat.app.data.dao.*
 import com.moneygoat.app.data.entity.*
 
 /**
- * The Room Database for the application.
- * Defines the entities and provides access to the DAOs.
+ * AppDatabase is the main entry point for the local Room persistence layer.
+ * 
+ * It defines the schema version, the set of data entities (tables), 
+ * and provides access to the Data Access Objects (DAOs) which contain the SQL queries.
  */
-@Database(entities = [User::class, Category::class, Expense::class, BudgetGoal::class], version = 1, exportSchema = false)
+@Database(
+    entities = [User::class, Category::class, Expense::class, BudgetGoal::class], 
+    version = 1, 
+    exportSchema = false
+)
 abstract class AppDatabase : RoomDatabase() {
-    /**
-     * @return The Data Access Object for the User entity.
-     */
+    
+    // Abstract methods to expose the DAOs to the rest of the application
     abstract fun userDao(): UserDao
-
-    /**
-     * @return The Data Access Object for the Category entity.
-     */
     abstract fun categoryDao(): CategoryDao
-
-    /**
-     * @return The Data Access Object for the Expense entity.
-     */
     abstract fun expenseDao(): ExpenseDao
-
-    /**
-     * @return The Data Access Object for the BudgetGoal entity.
-     */
     abstract fun budgetGoalDao(): BudgetGoalDao
 
     companion object {
-        // Singleton prevents multiple instances of database opening at the same time.
-        @Volatile private var INSTANCE: AppDatabase? = null
+        private const val TAG = "MoneyGoat_Database"
+        
+        /**
+         * Singleton pattern ensures only one instance of the database exists.
+         * Creating multiple instances is expensive and can lead to data synchronization issues.
+         */
+        @Volatile 
+        private var INSTANCE: AppDatabase? = null
 
         /**
-         * Gets the singleton instance of the AppDatabase.
-         * @param context The application context.
-         * @return The AppDatabase instance.
+         * Returns the database singleton.
+         * Uses synchronized double-check locking for thread safety during initialization.
          */
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
+                Log.d(TAG, "Initializing Room database instance...")
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     AppDatabase::class.java,
                     "moneygoat_database"
                 )
-                .fallbackToDestructiveMigration() // Simplifies database migration by wiping and rebuilding
+                /**
+                 * fallbackToDestructiveMigration:
+                 * During development, if we change the schema (e.g., add a column), 
+                 * Room will wipe the existing database and rebuild it from scratch 
+                 * instead of requiring complex migration scripts.
+                 */
+                .fallbackToDestructiveMigration() 
                 .build()
+                
                 INSTANCE = instance
+                Log.i(TAG, "Database instance created successfully.")
                 instance
             }
         }

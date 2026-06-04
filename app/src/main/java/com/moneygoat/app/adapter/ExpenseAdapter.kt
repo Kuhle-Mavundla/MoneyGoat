@@ -3,6 +3,7 @@ package com.moneygoat.app.adapter
 import android.app.AlertDialog
 import android.content.Context
 import android.graphics.BitmapFactory
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,15 +17,35 @@ import com.moneygoat.app.data.entity.Expense
 import java.io.File
 
 /**
- * Adapter for displaying a list of Expenses in a RecyclerView.
- * Extends ListAdapter for efficient list updates using DiffUtil.
+ * ExpenseAdapter is responsible for rendering a list of individual financial transactions.
+ * It uses the modern ListAdapter pattern to handle data updates efficiently on a background thread.
+ * 
+ * Special Feature: Receipt Viewing
+ * If an expense has an associated image path, the adapter displays a photo icon.
+ * Clicking the item will launch a dialog showing the full-resolution receipt image.
  */
 class ExpenseAdapter(private val context: Context) : ListAdapter<Expense, ExpenseAdapter.VH>(object : DiffUtil.ItemCallback<Expense>() {
-    override fun areItemsTheSame(a: Expense, b: Expense) = a.id == b.id
-    override fun areContentsTheSame(a: Expense, b: Expense) = a == b
-}) {
+    
+    private val TAG = "MoneyGoat_ExpenseAdapter"
+
     /**
-     * ViewHolder class for individual expense items.
+     * Checks if two objects represent the same database record using their primary key.
+     */
+    override fun areItemsTheSame(a: Expense, b: Expense): Boolean {
+        return a.id == b.id
+    }
+
+    /**
+     * Checks if the visual content of the expense has changed.
+     */
+    override fun areContentsTheSame(a: Expense, b: Expense): Boolean {
+        return a == b
+    }
+}) {
+    private val TAG = "MoneyGoat_ExpenseAdapter"
+
+    /**
+     * ViewHolder holds references to the UI components for a single expense row.
      */
     class VH(v: View) : RecyclerView.ViewHolder(v) {
         val tvDesc: TextView = v.findViewById(R.id.tvExpenseDescription)
@@ -34,35 +55,64 @@ class ExpenseAdapter(private val context: Context) : ListAdapter<Expense, Expens
         val ivPhoto: ImageView = v.findViewById(R.id.ivHasPhoto)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = VH(LayoutInflater.from(parent.context).inflate(R.layout.item_expense, parent, false))
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
+        // Log the creation of new view holders (useful for monitoring recycling behavior)
+        Log.v(TAG, "Creating new ViewHolder for expense item")
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_expense, parent, false)
+        return VH(view)
+    }
 
     override fun onBindViewHolder(h: VH, pos: Int) {
-        val e = getItem(pos)
-        h.tvDesc.text = e.description
-        h.tvAmt.text = "R %.2f".format(e.amount)
-        h.tvDate.text = e.date
-        h.tvTime.text = "${e.startTime} - ${e.endTime}"
+        val expense = getItem(pos)
         
-        // Show photo icon if a receipt photo exists
-        if (e.photoPath != null && File(e.photoPath).exists()) {
-            h.ivPhoto.visibility = View.VISIBLE
-            // Clicking an item with a photo opens a dialog to view the receipt
-            h.itemView.setOnClickListener {
-                val bmp = BitmapFactory.decodeFile(e.photoPath)
-                if (bmp != null) {
-                    val iv = ImageView(context).apply { 
-                        setImageBitmap(bmp)
-                        adjustViewBounds = true
-                        setPadding(16,16,16,16) 
+        // Data Binding
+        h.tvDesc.text = expense.description
+        h.tvAmt.text = "R %.2f".format(expense.amount)
+        h.tvDate.text = expense.date
+        h.tvTime.text = "${expense.startTime} - ${expense.endTime}"
+        
+        // --- Receipt Image Logic ---
+        
+        // Check if the file path exists and the file is actually on the disk
+        if (expense.photoPath != null) {
+            val imageFile = File(expense.photoPath)
+            if (imageFile.exists()) {
+                Log.d(TAG, "Receipt found for: ${expense.description} at ${expense.photoPath}")
+                h.ivPhoto.visibility = View.VISIBLE
+                
+                /**
+                 * Item click listener: Opens the receipt image in a popup dialog.
+                 */
+                h.itemView.setOnClickListener {
+                    Log.i(TAG, "User opening receipt for: ${expense.description}")
+                    try {
+                        val bmp = BitmapFactory.decodeFile(expense.photoPath)
+                        if (bmp != null) {
+                            val iv = ImageView(context).apply { 
+                                setImageBitmap(bmp)
+                                adjustViewBounds = true
+                                setPadding(16, 16, 16, 16) 
+                            }
+                            
+                            AlertDialog.Builder(context)
+                                .setTitle("Receipt for: ${expense.description}")
+                                .setView(iv)
+                                .setPositiveButton("Close", null)
+                                .show()
+                        } else {
+                            Log.e(TAG, "Failed to decode bitmap from path: ${expense.photoPath}")
+                        }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Error displaying receipt dialog", e)
                     }
-                    AlertDialog.Builder(context)
-                        .setTitle("Receipt: ${e.description}")
-                        .setView(iv)
-                        .setPositiveButton("Close", null)
-                        .show()
                 }
+            } else {
+                Log.w(TAG, "Photo path recorded but file not found on device for ID: ${expense.id}")
+                h.ivPhoto.visibility = View.GONE
+                h.itemView.setOnClickListener(null)
             }
         } else { 
+            // Reset visibility and listeners for recycled views
             h.ivPhoto.visibility = View.GONE
             h.itemView.setOnClickListener(null) 
         }

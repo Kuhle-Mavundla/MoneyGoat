@@ -5,32 +5,40 @@ import androidx.room.Query
 import com.moneygoat.app.data.entity.User
 
 /**
- * Data Access Object for the User entity.
- * Provides methods for registration and authentication.
+ * UserDao provides the data access methods for user account management.
+ * 
+ * It handles the core identity functions of the application, including 
+ * account creation (registration) and credential verification (login).
  */
 @Dao
 interface UserDao {
     /**
-     * Inserts a new user into the database.
-     * @param user The user object to insert.
-     * @return The row ID of the newly inserted user.
+     * Persists a new user record to the 'users' table.
+     * 
+     * @param user The User entity containing username and password.
+     * @return The auto-generated row ID for the new user.
      */
     @Insert
     suspend fun insert(user: User): Long
 
     /**
-     * Attempts to find a user with matching username and password.
-     * @param username The username to search for.
-     * @param password The password to search for.
-     * @return The User object if found, null otherwise.
+     * Authenticates a user by checking for an exact match of username and password.
+     * This is a "one-shot" query used during the login flow.
+     * 
+     * @param username The username provided in the login form.
+     * @param password The password provided in the login form.
+     * @return The matching User object if credentials are correct, null otherwise.
      */
     @Query("SELECT * FROM users WHERE username = :username AND password = :password LIMIT 1")
     suspend fun login(username: String, password: String): User?
 
     /**
-     * Finds a user by their username.
-     * @param username The username to search for.
-     * @return The User object if found, null otherwise.
+     * Checks if a specific username already exists in the database.
+     * Used during registration to enforce the requirement that every user 
+     * must have a unique identity.
+     * 
+     * @param username The username to check.
+     * @return The existing User object if found, null if the username is available.
      */
     @Query("SELECT * FROM users WHERE username = :username LIMIT 1")
     suspend fun getByUsername(username: String): User?

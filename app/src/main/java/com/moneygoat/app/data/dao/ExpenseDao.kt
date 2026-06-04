@@ -5,44 +5,57 @@ import com.moneygoat.app.data.entity.CategoryTotal
 import com.moneygoat.app.data.entity.Expense
 
 /**
- * Data Access Object for the Expense entity.
- * Handles all database operations related to tracking expenses.
+ * ExpenseDao provides the interface for Room to interact with the 'expenses' table.
+ * It contains SQL queries for recording transactions and generating analytical reports.
  */
 @Dao
 interface ExpenseDao {
     /**
-     * Inserts a new expense into the database.
+     * Persists a new transaction to the database.
+     * @return The auto-generated primary key ID of the new record.
      */
     @Insert
     suspend fun insert(expense: Expense): Long
 
     /**
-     * Deletes an existing expense from the database.
+     * Removes a specific transaction from the database.
      */
     @Delete
     suspend fun delete(expense: Expense)
 
     /**
-     * Retrieves all expenses for a specific user, ordered by date and time.
+     * Retrieves the entire transaction history for a user, sorted chronologically (newest first).
+     * Returns a LiveData stream for real-time UI updates.
      */
     @Query("SELECT * FROM expenses WHERE userId = :userId ORDER BY date DESC, startTime DESC")
     fun getAllByUser(userId: Long): LiveData<List<Expense>>
 
     /**
-     * Retrieves expenses for a specific user within a given date range.
+     * Filters expenses for a specific audit period. 
+     * Used by the Expense List and Analytics screens.
      */
     @Query("SELECT * FROM expenses WHERE userId = :userId AND date BETWEEN :startDate AND :endDate ORDER BY date DESC, startTime DESC")
     fun getExpensesByDateRange(userId: Long, startDate: String, endDate: String): LiveData<List<Expense>>
 
     /**
-     * Calculates the total amount spent per category for a user within a date range.
-     * Returns a list of CategoryTotal objects.
+     * Performs a relational JOIN between expenses and categories to calculate spending per category.
+     * This aggregation is the primary data source for the PieChart visualization.
+     * 
+     * @return A list of CategoryTotal projections containing category names and their summed amounts.
      */
-    @Query("SELECT c.name AS categoryName, SUM(e.amount) AS totalAmount FROM expenses e INNER JOIN categories c ON e.categoryId = c.id WHERE e.userId = :userId AND e.date BETWEEN :startDate AND :endDate GROUP BY e.categoryId ORDER BY totalAmount DESC")
+    @Query("""
+        SELECT c.name AS categoryName, SUM(e.amount) AS totalAmount 
+        FROM expenses e 
+        INNER JOIN categories c ON e.categoryId = c.id 
+        WHERE e.userId = :userId AND e.date BETWEEN :startDate AND :endDate 
+        GROUP BY e.categoryId 
+        ORDER BY totalAmount DESC
+    """)
     fun getCategoryTotals(userId: Long, startDate: String, endDate: String): LiveData<List<CategoryTotal>>
 
     /**
-     * Calculates the grand total of all expenses for a user within a date range.
+     * Aggregates the total spending for a specific user and period.
+     * Used on the Dashboard and Analytics screens to compare against budget goals.
      */
     @Query("SELECT SUM(amount) FROM expenses WHERE userId = :userId AND date BETWEEN :startDate AND :endDate")
     fun getTotalSpent(userId: Long, startDate: String, endDate: String): LiveData<Double?>

@@ -12,8 +12,14 @@ import com.moneygoat.app.R
 import com.moneygoat.app.viewmodel.LoginViewModel
 
 /**
- * Activity for registering new users.
- * Performs basic validation on input fields before attempting database insertion.
+ * RegisterActivity facilitates the creation of new user accounts.
+ * It performs client-side validation of user input before interacting with the database.
+ *
+ * Flow:
+ * 1. User enters username and password (with confirmation).
+ * 2. Activity validates input constraints (non-empty, password match, minimum length).
+ * 3. ViewModel attempts to create the user in the Room database and sync with Firebase.
+ * 4. On success, the user is redirected back to the login screen.
  */
 class RegisterActivity : AppCompatActivity() {
     private val TAG = "MoneyGoat_RegisterUI"
@@ -21,67 +27,78 @@ class RegisterActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d(TAG, "RegisterActivity created")
+        Log.i(TAG, "RegisterActivity launched")
         setContentView(R.layout.activity_register)
+
+        // Use the same LoginViewModel for registration logic as it handles User entity operations
         viewModel = ViewModelProvider(this)[LoginViewModel::class.java]
         
-        // Initialize UI components
+        // UI Component Initialization
         val etUsername = findViewById<EditText>(R.id.etRegUsername)
         val etPassword = findViewById<EditText>(R.id.etRegPassword)
         val etConfirm = findViewById<EditText>(R.id.etRegConfirmPassword)
         val btnRegister = findViewById<Button>(R.id.btnRegister)
         val tvBack = findViewById<TextView>(R.id.tvBackToLogin)
 
-        // Set registration button listener
+        // Set up the registration submission logic
         btnRegister.setOnClickListener {
             val username = etUsername.text.toString().trim()
             val password = etPassword.text.toString().trim()
             val confirm = etConfirm.text.toString().trim()
             
-            // Validate that fields are not empty
+            Log.d(TAG, "Registration form submitted for username: $username")
+
+            // --- VALIDATION CHECKS ---
+
+            // 1. Check for blank fields
             if (username.isEmpty() || password.isEmpty() || confirm.isEmpty()) {
-                Log.w(TAG, "Registration attempt with empty fields")
+                Log.w(TAG, "Validation failed: One or more fields are empty")
                 Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
             
-            // Validate that passwords match
+            // 2. Ensure both password entries match to prevent typos during account creation
             if (password != confirm) {
-                Log.w(TAG, "Registration failed: Passwords do not match")
+                Log.w(TAG, "Validation failed: Passwords do not match")
                 Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
             
-            // Simple password length validation
+            // 3. Enforce a minimum security standard for password length
             if (password.length < 4) {
-                Log.w(TAG, "Registration failed: Password too short")
+                Log.w(TAG, "Validation failed: Password length (${password.length}) is below requirement")
                 Toast.makeText(this, "Password must be at least 4 characters", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
             
-            Log.d(TAG, "Initiating registration for: $username")
+            // If all checks pass, delegate to ViewModel
+            Log.i(TAG, "Inputs validated. Calling ViewModel registration for: $username")
             viewModel.register(username, password)
         }
         
-        // Return to login screen
+        // Simple navigation to return to the previous LoginActivity
         tvBack.setOnClickListener {
-            Log.d(TAG, "Navigating back to Login")
+            Log.v(TAG, "User opted to cancel registration and return to Login")
             finish()
         }
         
-        // Observe registration success
+        // --- VIEWMODEL OBSERVATION ---
+
+        // Observe if the registration process was successful
         viewModel.registerResult.observe(this) { success ->
             if (success) {
-                Log.d(TAG, "Registration successful")
+                Log.i(TAG, "Registration confirmed by data layer. Returning to login screen.")
                 Toast.makeText(this, "Registration successful! Please log in.", Toast.LENGTH_SHORT).show()
-                finish()
+                finish() // Closes RegisterActivity and returns to LoginActivity
             }
         }
         
-        // Observe errors (e.g., username already exists)
-        viewModel.errorMessage.observe(this) {
-            Log.e(TAG, "Registration error: $it")
-            Toast.makeText(this, it, Toast.LENGTH_SHORT).show()
+        // Observe errors (e.g., SQLite constraint failure if username is already taken)
+        viewModel.errorMessage.observe(this) { errorMsg ->
+            if (errorMsg != null) {
+                Log.e(TAG, "Registration failed with error: $errorMsg")
+                Toast.makeText(this, errorMsg, Toast.LENGTH_SHORT).show()
+            }
         }
     }
 }
