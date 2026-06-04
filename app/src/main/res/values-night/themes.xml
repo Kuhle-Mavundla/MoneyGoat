@@ -1,7 +1,21 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.MoneyGoat" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+        We use the same parent and colors as the light theme to ensure
+        brand consistency across all device settings.
+    -->
+    <style name="Theme.MoneyGoat" parent="Theme.MaterialComponents.Light.DarkActionBar">
+        <!-- Brand Colors (Consistent with Light Theme) -->
+        <item name="colorPrimary">@color/primary_green</item>
+        <item name="colorPrimaryDark">@color/primary_green_dark</item>
+        <item name="colorAccent">@color/accent_gold</item>
+
+        <!-- Background and Text -->
+        <item name="android:windowBackground">@color/background_cream</item>
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+
+        <!-- Status Bar -->
+        <item name="android:statusBarColor">@color/primary_green_dark</item>
     </style>
 </resources>
