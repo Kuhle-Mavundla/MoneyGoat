@@ -158,7 +158,7 @@ class AddExpenseFragment : Fragment() {
         btnSave.setOnClickListener {
             val desc = etDesc.text.toString().trim()
             val amtStr = etAmt.text.toString().trim()
-            Log.d(TAG, "Save expense button clicked. Desc: $desc, Amount: $amtStr")
+            val username = (requireActivity() as MainActivity).username
             
             if (desc.isEmpty() || amtStr.isEmpty() || selectedDate.isEmpty() || selectedStartTime.isEmpty() || selectedEndTime.isEmpty()) {
                 Log.w(TAG, "Expense validation failed: empty fields")
@@ -191,7 +191,8 @@ class AddExpenseFragment : Fragment() {
                     categoryId = categories[spinner.selectedItemPosition].id,
                     userId = userId,
                     photoPath = photoPath
-                )
+                ),
+                username
             )
             Toast.makeText(requireContext(), "Expense saved!", Toast.LENGTH_SHORT).show()
             

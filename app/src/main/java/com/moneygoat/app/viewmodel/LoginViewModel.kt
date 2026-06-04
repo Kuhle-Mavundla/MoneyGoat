@@ -52,8 +52,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     /**
      * Attempts to register a new user.
      * Checks if the username already exists before inserting.
-     * @param username The desired username.
-     * @param password The desired password.
+     * Also syncs the user profile to Firebase.
      */
     fun register(username: String, password: String) {
         Log.d(TAG, "Registration attempt for user: $username")
@@ -64,8 +63,13 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
                     errorMessage.postValue("Username already exists")
                     return@launch
                 }
-                userDao.insert(User(username = username, password = password))
-                Log.d(TAG, "Registration successful for user: $username")
+                val user = User(username = username, password = password)
+                userDao.insert(user)
+                
+                // Sync to online database
+                com.moneygoat.app.data.FirebaseManager().uploadUser(user)
+                
+                Log.d(TAG, "Registration successful and synced for: $username")
                 registerResult.postValue(true)
             } catch (e: Exception) {
                 Log.e(TAG, "Error during registration for user: $username", e)

@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 /**
  * ViewModel for managing expenses.
  * Handles adding, deleting, and filtering expenses by date range.
- * Now syncs data to Firebase for online persistence.
+ * Now syncs data to Firebase for online persistence using username as key.
  */
 class ExpenseViewModel(application: Application) : AndroidViewModel(application) {
     private val TAG = "MoneyGoat_Expense"
@@ -21,17 +21,14 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
     private val _dateFilter = MutableLiveData<Triple<Long, String, String>>()
 
     val filteredExpenses: LiveData<List<Expense>> = _dateFilter.switchMap { (u, s, e) ->
-        Log.d(TAG, "Reading expenses for user $u from $s to $e")
         dao.getExpensesByDateRange(u, s, e)
     }
     
     val categoryTotals: LiveData<List<CategoryTotal>> = _dateFilter.switchMap { (u, s, e) ->
-        Log.d(TAG, "Reading category totals for user $u from $s to $e")
         dao.getCategoryTotals(u, s, e)
     }
     
     val totalSpent: LiveData<Double?> = _dateFilter.switchMap { (u, s, e) ->
-        Log.d(TAG, "Reading total spent for user $u from $s to $e")
         dao.getTotalSpent(u, s, e)
     }
 
@@ -40,17 +37,16 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
     }
 
     /**
-     * Adds a new expense and syncs it to Firebase.
+     * Adds a new expense and syncs it to Firebase using the username.
      */
-    fun addExpense(expense: Expense) {
+    fun addExpense(expense: Expense, username: String) {
         viewModelScope.launch {
             try {
-                Log.d(TAG, "Saving expense locally: ${expense.description}")
                 val id = dao.insert(expense)
                 
-                // Sync to online database
+                // Sync to online database using username for cross-device consistency
                 val syncedExpense = expense.copy(id = id)
-                firebase.uploadExpense(expense.userId, syncedExpense)
+                firebase.uploadExpense(username, syncedExpense)
                 
                 Log.d(TAG, "Expense saved and synced successfully")
             } catch (e: Exception) {
@@ -63,7 +59,6 @@ class ExpenseViewModel(application: Application) : AndroidViewModel(application)
         viewModelScope.launch {
             try {
                 dao.delete(expense)
-                Log.d(TAG, "Expense deleted successfully")
             } catch (e: Exception) {
                 Log.e(TAG, "Error deleting expense", e)
             }

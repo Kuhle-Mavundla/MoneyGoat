@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 
 /**
  * ViewModel for managing expense categories.
- * Now includes Firebase sync.
+ * Now includes Firebase sync using username.
  */
 class CategoryViewModel(application: Application) : AndroidViewModel(application) {
     private val TAG = "MoneyGoat_Category"
@@ -29,16 +29,15 @@ class CategoryViewModel(application: Application) : AndroidViewModel(application
     /**
      * Adds a new category and syncs it to Firebase.
      */
-    fun addCategory(name: String, userId: Long) {
+    fun addCategory(name: String, userId: Long, username: String) {
         viewModelScope.launch {
             try {
-                Log.d(TAG, "Saving category locally: $name")
                 val category = Category(name = name, userId = userId)
                 val id = dao.insert(category)
                 
                 // Sync to online database
                 val syncedCategory = category.copy(id = id)
-                firebase.uploadCategory(userId, syncedCategory)
+                firebase.uploadCategory(username, syncedCategory)
                 
                 Log.d(TAG, "Category saved and synced successfully")
             } catch (e: Exception) {
@@ -51,7 +50,6 @@ class CategoryViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             try {
                 dao.delete(category)
-                Log.d(TAG, "Category deleted successfully")
             } catch (e: Exception) {
                 Log.e(TAG, "Error deleting category", e)
             }

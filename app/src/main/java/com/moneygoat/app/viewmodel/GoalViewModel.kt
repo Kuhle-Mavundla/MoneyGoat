@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 
 /**
  * ViewModel for managing budget goals.
- * Now includes Firebase sync for online data storage.
+ * Now includes Firebase sync using username.
  */
 class GoalViewModel(application: Application) : AndroidViewModel(application) {
     private val TAG = "MoneyGoat_Goal"
@@ -25,10 +25,9 @@ class GoalViewModel(application: Application) : AndroidViewModel(application) {
     /**
      * Saves or updates a budget goal and syncs it to Firebase.
      */
-    fun saveGoal(userId: Long, month: Int, year: Int, minGoal: Double, maxGoal: Double) {
+    fun saveGoal(userId: Long, username: String, month: Int, year: Int, minGoal: Double, maxGoal: Double) {
         viewModelScope.launch {
             try {
-                Log.d(TAG, "Saving goal locally for $month/$year")
                 val existing = dao.getGoalDirect(userId, month, year)
                 val goal = BudgetGoal(
                     id = existing?.id ?: 0, 
@@ -42,7 +41,7 @@ class GoalViewModel(application: Application) : AndroidViewModel(application) {
                 
                 // Sync to online database
                 val syncedGoal = if (goal.id == 0L) goal.copy(id = id) else goal
-                firebase.uploadGoal(userId, syncedGoal)
+                firebase.uploadGoal(username, syncedGoal)
                 
                 Log.d(TAG, "Goal saved and synced successfully")
             } catch (e: Exception) {

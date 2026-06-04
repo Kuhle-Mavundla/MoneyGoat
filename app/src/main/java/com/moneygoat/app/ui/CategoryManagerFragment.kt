@@ -41,11 +41,12 @@ class CategoryManagerFragment : Fragment() {
         // Add category button listener
         btnAdd.setOnClickListener {
             val name = etName.text.toString().trim()
+            val username = (requireActivity() as MainActivity).username
             if (name.isEmpty()) { 
                 Toast.makeText(requireContext(), "Enter a category name", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener 
             }
-            categoryVM.addCategory(name, userId)
+            categoryVM.addCategory(name, userId, username)
             etName.text.clear()
             Toast.makeText(requireContext(), "Category added!", Toast.LENGTH_SHORT).show()
         }

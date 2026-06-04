@@ -84,6 +84,7 @@ class GoalSettingsFragment : Fragment() {
         btnSave.setOnClickListener {
             val min = etMin.text.toString().trim().toDoubleOrNull()
             val max = etMax.text.toString().trim().toDoubleOrNull()
+            val username = (requireActivity() as MainActivity).username
             
             if (min == null || max == null) { 
                 Toast.makeText(requireContext(), "Enter both goals", Toast.LENGTH_SHORT).show()
@@ -96,7 +97,7 @@ class GoalSettingsFragment : Fragment() {
                 return@setOnClickListener 
             }
 
-            goalVM.saveGoal(userId, month, year, min, max)
+            goalVM.saveGoal(userId, username, month, year, min, max)
             Toast.makeText(requireContext(), "Goals saved!", Toast.LENGTH_SHORT).show()
         }
     }
